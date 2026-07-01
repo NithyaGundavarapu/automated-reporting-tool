@@ -1,0 +1,29 @@
+name,online_order,book_table,rate,votes,location,cuisines,approx_cost(for two people),listed_in(type),country
+Spice Symphony,Yes,Yes,4.1/5,620,Bangalore,"North Indian, Chinese",800,Dining,India
+Curry Leaf,Yes,No,3.8/5,310,Bangalore,"South Indian, Andhra",500,Dining,India
+Wok This Way,Yes,No,4.3/5,845,Bangalore,"Chinese, Thai",900,Delivery,India
+Biryani House,No,No,3.6/5,220,Bangalore,Biryani,450,Delivery,India
+Cafe Mocha,Yes,No,4.0/5,410,Bangalore,"Cafe, Desserts",600,Dining,India
+The Grand Thali,No,Yes,4.4/5,980,Mumbai,"North Indian, Rajasthani",1200,Dining,India
+Sea Breeze,Yes,Yes,4.2/5,560,Mumbai,"Seafood, Continental","1,500",Dining,India
+Pizza Corner,Yes,No,3.5/5,150,Mumbai,Italian,700,Delivery,India
+Chaat Junction,No,No,3.9/5,275,Mumbai,"Street Food, North Indian",300,Delivery,India
+Bombay Brew,Yes,No,4.1/5,690,Mumbai,Cafe,550,Dining,India
+Delhi Darbar,No,Yes,4.5/5,1100,Delhi,"North Indian, Mughlai","1,400",Dining,India
+Chandni Chowk Bites,No,No,3.7/5,340,Delhi,Street Food,250,Delivery,India
+Green Leaf,Yes,No,4.0/5,410,Delhi,"South Indian, Vegan",600,Delivery,India
+Cafe Delight,Yes,No,NEW,12,Delhi,"Cafe, Desserts",500,Dining,India
+Punjabi Tadka,No,No,3.8/5,290,Delhi,"North Indian, Punjabi",700,Dining,India
+Chennai Express,Yes,Yes,4.3/5,760,Chennai,"South Indian, Chettinad",650,Dining,India
+Marina Meals,No,No,3.6/5,180,Chennai,"South Indian",400,Delivery,India
+Dosa Point,Yes,No,4.1/5,520,Chennai,South Indian,300,Delivery,India
+Coastal Curry,Yes,No,4.0/5,430,Chennai,Seafood,750,Dining,India
+Sunrise Cafe,No,No,-,5,Chennai,Cafe,450,Dining,India
+Manhattan Grill,Yes,Yes,4.4/5,890,New York,"American, Steakhouse","2,500",Dining,USA
+Little Italy,Yes,No,4.2/5,610,New York,Italian,"1,800",Delivery,USA
+Sushi Central,No,Yes,4.6/5,720,New York,Japanese,"2,000",Dining,USA
+The Fish & Chip Shop,Yes,No,3.9/5,340,London,British,"1,300",Delivery,UK
+Curry House London,Yes,Yes,4.3/5,880,London,"North Indian, British","1,600",Dining,UK
+Pasta Palace,No,No,4.0/5,290,London,Italian,"1,400",Delivery,UK
+Noodle Bar,Yes,No,3.7/5,260,Bangalore,"Chinese, Thai",550,Delivery,India
+Royal Feast,No,Yes,4.5/5,1020,Mumbai,"North Indian, Mughlai","1,900",Dining,India
