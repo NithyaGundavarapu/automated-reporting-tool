@@ -1,3 +1,4 @@
+import io
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -12,7 +13,13 @@ from streamlit_autorefresh import st_autorefresh
 
 from src.config import AUTO_REFRESH_SECONDS, DATA_DIR
 from src.data_loader import load_data
-from src.metrics import pick_default_columns, summary_kpis, totals_by_category, trend_by_date
+from src.metrics import (
+    pick_default_columns,
+    previous_period_kpis,
+    summary_kpis,
+    totals_by_category,
+    trend_by_date,
+)
 
 st.set_page_config(page_title="Automated Reporting Tool", layout="wide")
 
@@ -27,6 +34,21 @@ with st.sidebar:
     )
     if auto_refresh:
         st_autorefresh(interval=interval * 1000, key="auto_refresh_timer")
+
+    st.header("Add data")
+    uploaded_files = st.file_uploader(
+        "Upload CSV/Excel files", type=["csv", "xlsx", "xls"], accept_multiple_files=True
+    )
+    if uploaded_files:
+        st.session_state.setdefault("uploaded_filenames", set())
+        newly_saved = False
+        for uploaded in uploaded_files:
+            if uploaded.name not in st.session_state.uploaded_filenames:
+                (DATA_DIR / uploaded.name).write_bytes(uploaded.getbuffer())
+                st.session_state.uploaded_filenames.add(uploaded.name)
+                newly_saved = True
+        if newly_saved:
+            st.rerun()
 
 df = load_data()
 
@@ -49,14 +71,15 @@ with st.sidebar:
     category_col = None if category_col == "(none)" else category_col
 
     filtered_df = df
+    period_start, period_end = None, None
     if date_col:
         min_date, max_date = df[date_col].min(), df[date_col].max()
         date_range = st.date_input("Date range", value=(min_date.date(), max_date.date()))
         if isinstance(date_range, tuple) and len(date_range) == 2:
-            start, end = date_range
+            period_start, period_end = date_range
             filtered_df = filtered_df[
-                (filtered_df[date_col] >= pd.Timestamp(start))
-                & (filtered_df[date_col] <= pd.Timestamp(end))
+                (filtered_df[date_col] >= pd.Timestamp(period_start))
+                & (filtered_df[date_col] <= pd.Timestamp(period_end))
             ]
 
     if category_col:
@@ -64,11 +87,38 @@ with st.sidebar:
         selected = st.multiselect("Filter by " + category_col, options, default=options)
         filtered_df = filtered_df[filtered_df[category_col].isin(selected)]
 
+
+def _delta(current, previous):
+    if previous in (None, 0) or current is None:
+        return None
+    return f"{(current - previous) / previous:+.1%} vs prior period"
+
+
 kpis = summary_kpis(filtered_df, value_col)
+prev_kpis = (
+    previous_period_kpis(df, date_col, value_col, period_start, period_end)
+    if period_start and period_end
+    else None
+)
+
 col1, col2, col3 = st.columns(3)
-col1.metric("Total records", f"{kpis['total_records']:,}")
-col2.metric(f"Total {value_col}", f"{kpis['total']:,.2f}" if kpis["total"] is not None else "-")
-col3.metric(f"Average {value_col}", f"{kpis['average']:,.2f}" if kpis["average"] is not None else "-")
+col1.metric(
+    "Total records",
+    f"{kpis['total_records']:,}",
+    delta=_delta(kpis["total_records"], prev_kpis["total_records"]) if prev_kpis else None,
+)
+col2.metric(
+    f"Total {value_col}",
+    f"{kpis['total']:,.2f}" if kpis["total"] is not None else "-",
+    delta=_delta(kpis["total"], prev_kpis["total"]) if prev_kpis else None,
+)
+col3.metric(
+    f"Average {value_col}",
+    f"{kpis['average']:,.2f}" if kpis["average"] is not None else "-",
+    delta=_delta(kpis["average"], prev_kpis["average"]) if prev_kpis else None,
+)
+if prev_kpis:
+    st.caption("Delta compares the selected date range to the immediately preceding period of equal length.")
 
 st.divider()
 
@@ -95,5 +145,23 @@ with chart_col2:
 st.divider()
 st.subheader("Raw data")
 st.dataframe(filtered_df, use_container_width=True)
+
+excel_buffer = io.BytesIO()
+with pd.ExcelWriter(excel_buffer, engine="openpyxl") as writer:
+    filtered_df.to_excel(writer, sheet_name="Filtered Data", index=False)
+
+download_col1, download_col2 = st.columns(2)
+download_col1.download_button(
+    "Download filtered data (CSV)",
+    data=filtered_df.to_csv(index=False).encode("utf-8"),
+    file_name="filtered_data.csv",
+    mime="text/csv",
+)
+download_col2.download_button(
+    "Download filtered data (Excel)",
+    data=excel_buffer.getvalue(),
+    file_name="filtered_data.xlsx",
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+)
 
 st.caption(f"Last refreshed: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")

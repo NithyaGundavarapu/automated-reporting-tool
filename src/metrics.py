@@ -1,3 +1,5 @@
+import pandas as pd
+
 from src.data_loader import detect_category_columns, detect_date_column, detect_numeric_columns
 
 
@@ -7,6 +9,18 @@ def summary_kpis(df, value_col):
         "total": df[value_col].sum() if value_col else None,
         "average": df[value_col].mean() if value_col else None,
     }
+
+
+def previous_period_kpis(df, date_col, value_col, start, end):
+    """KPIs for the period of equal length immediately preceding [start, end]."""
+    if not date_col or not value_col:
+        return None
+    start, end = pd.Timestamp(start), pd.Timestamp(end)
+    period_length = end - start
+    prev_end = start - pd.Timedelta(days=1)
+    prev_start = prev_end - period_length
+    prev_df = df[(df[date_col] >= prev_start) & (df[date_col] <= prev_end)]
+    return summary_kpis(prev_df, value_col)
 
 
 def trend_by_date(df, date_col, value_col, freq="W"):
