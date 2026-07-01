@@ -26,6 +26,9 @@ from src.restaurant.metrics import (
     country_stats,
     cuisine_popularity,
     price_range_distribution,
+    rating_by_feature,
+    rest_type_distribution,
+    top_voted_restaurants,
 )
 
 st.set_page_config(page_title="Restaurant Analytics Dashboard", layout="wide")
@@ -96,6 +99,10 @@ cuisine_df = cuisine_popularity(filtered_df)
 price_df = price_range_distribution(filtered_df)
 country_df = country_stats(filtered_df)
 booking_stats = booking_delivery_stats(filtered_df)
+rest_type_df = rest_type_distribution(filtered_df)
+top_voted_df = top_voted_restaurants(filtered_df)
+rating_by_online_order = rating_by_feature(filtered_df, "online_order")
+rating_by_book_table = rating_by_feature(filtered_df, "book_table")
 
 thresholds = {
     "min_avg_rating": min_avg_rating,
@@ -103,7 +110,7 @@ thresholds = {
     "min_book_table_pct": min_book_table_pct,
 }
 alerts = check_threshold_alerts(filtered_df, booking_stats, thresholds)
-insights = generate_text_insights(city_df, cuisine_df, price_df, country_df, booking_stats)
+insights = generate_text_insights(city_df, cuisine_df, price_df, country_df, booking_stats, rest_type_df)
 
 st.subheader("Alerts")
 if alerts:
@@ -195,6 +202,61 @@ if "city" in filtered_df.columns and ("online_order" in filtered_df.columns or "
     st.plotly_chart(fig, use_container_width=True)
 else:
     st.info("No online_order/book_table columns detected in this dataset.")
+
+st.divider()
+
+chart_col5, chart_col6 = st.columns(2)
+
+with chart_col5:
+    st.subheader("Rating distribution")
+    if "rating" in filtered_df.columns and filtered_df["rating"].notna().any():
+        fig = px.histogram(filtered_df.dropna(subset=["rating"]), x="rating", nbins=20)
+        st.plotly_chart(fig, use_container_width=True)
+    else:
+        st.info("No rating column detected in this dataset.")
+
+with chart_col6:
+    st.subheader("Cost vs. rating")
+    if {"cost", "rating"}.issubset(filtered_df.columns) and filtered_df[["cost", "rating"]].dropna().shape[0] > 0:
+        color = "online_order" if "online_order" in filtered_df.columns else None
+        fig = px.scatter(filtered_df.dropna(subset=["cost", "rating"]), x="cost", y="rating", color=color)
+        st.plotly_chart(fig, use_container_width=True)
+    else:
+        st.info("Need both cost and rating columns detected to plot this.")
+
+chart_col7, chart_col8 = st.columns(2)
+
+with chart_col7:
+    st.subheader("Restaurant type distribution")
+    if rest_type_df is not None and not rest_type_df.empty:
+        fig = px.pie(rest_type_df, names="type", values="restaurant_count")
+        st.plotly_chart(fig, use_container_width=True)
+    else:
+        st.info("No restaurant type column (e.g. Dining/Delivery) detected in this dataset.")
+
+with chart_col8:
+    st.subheader("Most-voted (popular) restaurants")
+    if top_voted_df is not None and not top_voted_df.empty:
+        fig = px.bar(top_voted_df.sort_values("votes"), x="votes", y="name", orientation="h")
+        st.plotly_chart(fig, use_container_width=True)
+    else:
+        st.info("No name/votes columns detected in this dataset.")
+
+if rating_by_online_order is not None or rating_by_book_table is not None:
+    st.subheader("Does online ordering / table booking correlate with rating?")
+    chart_col9, chart_col10 = st.columns(2)
+    with chart_col9:
+        if rating_by_online_order is not None:
+            fig = px.bar(rating_by_online_order, x="online_order", y="avg_rating", title="By online order availability")
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("No online_order column detected in this dataset.")
+    with chart_col10:
+        if rating_by_book_table is not None:
+            fig = px.bar(rating_by_book_table, x="book_table", y="avg_rating", title="By table booking availability")
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("No book_table column detected in this dataset.")
 
 st.divider()
 st.subheader("Raw data")

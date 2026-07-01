@@ -22,4 +22,5 @@ COLUMN_ALIASES = {
     "online_order": ["online_order", "has online delivery", "online delivery"],
     "book_table": ["book_table", "has table booking", "table booking"],
     "votes": ["votes"],
+    "rest_type": ["listed_in(type)", "rest_type", "type"],
 }

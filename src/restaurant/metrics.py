@@ -64,3 +64,36 @@ def booking_delivery_stats(df):
     if "book_table" in df.columns:
         stats["book_table_pct"] = round(df["book_table"].mean() * 100, 1)
     return stats if stats else None
+
+
+def top_voted_restaurants(df, top_n=10):
+    if "name" not in df.columns or "votes" not in df.columns:
+        return None
+    cols = ["name", "votes"] + (["rating"] if "rating" in df.columns else [])
+    ranked = df[cols].dropna(subset=["votes"]).sort_values("votes", ascending=False)
+    return ranked.head(top_n).reset_index(drop=True)
+
+
+def rest_type_distribution(df):
+    if "rest_type" not in df.columns:
+        return None
+    counts = df["rest_type"].dropna().value_counts().reset_index()
+    counts.columns = ["type", "restaurant_count"]
+    return counts if not counts.empty else None
+
+
+def rating_by_feature(df, feature):
+    """Average rating grouped by a boolean feature column (online_order / book_table)."""
+    if feature not in df.columns or "rating" not in df.columns:
+        return None
+    grouped = (
+        df.dropna(subset=[feature, "rating"])
+        .groupby(feature)["rating"]
+        .mean()
+        .reset_index()
+    )
+    if grouped.empty:
+        return None
+    grouped[feature] = grouped[feature].map({True: "Yes", False: "No"})
+    grouped.columns = [feature, "avg_rating"]
+    return grouped

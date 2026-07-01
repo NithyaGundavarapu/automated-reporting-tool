@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def generate_text_insights(city_df, cuisine_df, price_df, country_df, booking_stats):
+def generate_text_insights(city_df, cuisine_df, price_df, country_df, booking_stats, rest_type_df=None):
     insights = []
 
     if city_df is not None and not city_df.empty:
@@ -40,6 +40,13 @@ def generate_text_insights(city_df, cuisine_df, price_df, country_df, booking_st
             insights.append(f"{booking_stats['online_order_pct']}% of restaurants offer online ordering")
         if "book_table_pct" in booking_stats:
             insights.append(f"{booking_stats['book_table_pct']}% of restaurants offer table booking")
+
+    if rest_type_df is not None and not rest_type_df.empty:
+        top_type = rest_type_df.iloc[0]
+        insights.append(
+            f"Most common listing type: {top_type['type']} "
+            f"({int(top_type['restaurant_count'])} restaurants)"
+        )
 
     return insights
 
