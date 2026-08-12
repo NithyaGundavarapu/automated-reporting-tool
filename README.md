@@ -48,8 +48,8 @@ To run this automatically on a schedule:
 1. Open **Task Scheduler** on Windows.
 2. Create a new task, trigger set to your desired frequency (e.g. daily).
 3. Action: **Start a program**, program = path to `python.exe`, arguments =
-   `"C:\Users\gunda\OneDrive\Desktop\automated reprting tool\generate_report.py"`,
-   start-in = `C:\Users\gunda\OneDrive\Desktop\automated reprting tool`.
+   `"C:\Users\gunda\OneDrive\Desktop\automated-reporting-tool\generate_report.py"`,
+   start-in = `C:\Users\gunda\OneDrive\Desktop\automated-reporting-tool`.
 
 ## Restaurant Analytics Dashboard
 

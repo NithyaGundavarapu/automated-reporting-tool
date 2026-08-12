@@ -37,10 +37,17 @@ def price_range_distribution(df):
     costs = df["cost"].dropna()
     if costs.nunique() < 3:
         return None
-    buckets = pd.qcut(costs, q=3, labels=["Budget", "Mid-range", "Premium"], duplicates="drop")
+    # duplicates="drop" can collapse the 3 requested quantile edges into fewer bins
+    # when `costs` has many repeated values, so labels must be sized to match.
+    buckets = pd.qcut(costs, q=3, duplicates="drop")
+    categories = buckets.cat.categories
+    if len(categories) < 2:
+        return None
+    labels = ["Budget", "Mid-range", "Premium"][: len(categories)]
+    buckets = buckets.cat.rename_categories(labels)
     dist = (buckets.value_counts(normalize=True) * 100).round(1).reset_index()
     dist.columns = ["price_range", "pct"]
-    order = {"Budget": 0, "Mid-range": 1, "Premium": 2}
+    order = {label: i for i, label in enumerate(labels)}
     dist["__order"] = dist["price_range"].map(order)
     return dist.sort_values("__order").drop(columns="__order").reset_index(drop=True)
 
